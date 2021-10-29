@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      div {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100px;
+        height: 100px;
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div></div>
+    <script>
+      const div = document.getElementsByTagName("div")[0];
+      function getStyle(ele, style) {
+        if (window.getComputedStyle) {
+          return window.getComputedStyle(ele, null)[style];
+        } else {
+          return ele.currentStyle[style];
+        }
+      }
+      //解除事件
+      function removeEvent(elem, type, handler) {
+        if (elem.removeEventListener) {
+          elem.removeEventListener(type, handler, false);
+        } else if (elem.detachEvent) {
+          elem.detachEvent("on" + type, elem["temp" + type]);
+        } else {
+          elem["on" + type] = null;
+        }
+      }
+      function addEvent(elem, type, handler) {
+        if (elem.addEventListener) {
+          elem.addEventListener(type, handler, false);
+        } else if (elem.attachEvent) {
+          elem["temp" + type + handler] = handler;
+          elem["temp" + type] = function () {
+            elem["temp" + type + handler].call(elem);
+          };
+          elem.attachEvent("on" + type, elem["temp" + type]);
+        } else {
+          elem["on" + type] = handler;
+        }
+      }
+      function drag(elem) {
+        var disX;
+        var disY;
+        addEvent(elem, "mousedown", function (e) {
+          var event = e || window.event;
+          disX = event.clientX - parseInt(getStyle(this, "left"));
+          disY = event.clientY - parseInt(getStyle(this, "top"));
+          addEvent(document, "mousemove", mouseMove);
+          addEvent(document, "mouseup", mouseUp);
+        });
+        function mouseMove(e) {
+          var event = e || window.event;
+          elem.style.left = event.pageX - disX + "px";
+          elem.style.top = event.pageY - disY + "px";
+        }
+        function mouseUp() {
+          removeEvent(document, "mousemove", mouseMove);
+          removeEvent(document, "mouseup", mouseUp);
+        }
+      }
+      drag(div);
+    </script>
+  </body>
+</html>
